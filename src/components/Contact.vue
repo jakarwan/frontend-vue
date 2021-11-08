@@ -204,7 +204,7 @@ export default {
         })
         .then((response) => {
           Swal.fire(
-            "บันทึกข้อมูลสำเร็จ",
+            "สำเร็จ",
             JSON.stringify(response.data.message),
             "success"
           );
