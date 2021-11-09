@@ -22,13 +22,26 @@
                   placeholder="นามสกุล"
                 ></b-form-input>
               </div>
-              <div class="col-md-12">
+              <div class="col-12 col-sm-12 col-md-7">
                 <label class="float-start m-2">หัวข้อที่ต้องการติดต่อ :</label>
                 <b-form-input
                   class="mt-3 col-2"
                   v-model="title"
                   placeholder="หัวข้อที่ต้องการติดต่อ"
                 ></b-form-input>
+              </div>
+              <div class="col-12 col-sm-12 col-md-5">
+                <label class="float-start m-2">วันที่ :</label>
+                <b-form-datepicker
+                  v-model="contactDate"
+                  :date-format-options="{
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                  }"
+                  locale="th"
+                ></b-form-datepicker>
+                {{ contactDate }}
               </div>
               <div class="col-md-12">
                 <label class="float-start m-2">รายละเอียด :</label>
@@ -54,16 +67,13 @@
       <div class="col-8">
         <div class="card">
           <b-table
-          class="m-4"
+            class="m-4"
             :items="rows"
             :fields="fields"
             :select-mode="selectMode"
             responsive="sm"
             ref="selectableTable"
           >
-            <template #cell(index)="rows">
-              {{ rows.index + 1 }}
-            </template>
             <template #cell(action)="rows">
               <ul class="list-inline mb-0">
                 <li class="list-inline-item">
@@ -74,7 +84,7 @@
                     title="Delete"
                     @click="alertConfirm(rows.item.id)"
                   >
-                    ลบ
+                    Delete
                   </a>
                 </li>
               </ul>
@@ -99,27 +109,31 @@ export default {
       title: "",
       description: "",
       rows: [],
+      contactDate: "",
 
       modes: ["multi", "single", "range"],
       fields: [
         {
-          key: "index",
-          label: "ลำดับ",
+          key: "contactdate",
+          label: "วันที่",
           sortable: false,
+          formatter: (value, key, item) => {
+              return this.change(item.contactdate)
+            }
         },
         {
           key: "firstname",
-          label: "ชื่อ",
+          label: "ชื่อ นามสกุล",
           sortable: false,
-        },
-        {
-          key: "familyname",
-          label: "นามสกุล",
-          sortable: false,
+          formatter: (value, key, item) => {
+            return `${item.firstname} ${
+              item.familyname != null ? item.familyname : ""
+            }`;
+          },
         },
         {
           key: "title",
-          label: "หัวข้อที่ต้องการติดต่อ",
+          label: "หัวข้อ",
           sortable: false,
         },
         {
@@ -129,7 +143,7 @@ export default {
         },
         {
           key: "action",
-          label: "ลบ",
+          label: "การทำงาน",
           sortable: false,
         },
       ],
@@ -158,7 +172,7 @@ export default {
         .then((response) => {
           this.rows = response.data;
         })
-        .catch(function (error) {
+        .catch((error) => {
           Swal.fire(
             "Error",
             JSON.stringify(error.response.data.message),
@@ -173,17 +187,17 @@ export default {
           familyname: this.familyname != null ? this.familyname : undefined,
           title: this.title != null ? this.title : undefined,
           description: this.description != null ? this.description : undefined,
+          contactdate: this.contactDate != null ? this.contactDate : undefined,
         })
-        .then(function (response) {
-          if (response) {
+        .then((response) => {
             Swal.fire(
               "บันทึกข้อมูลสำเร็จ",
               JSON.stringify(response.data.message),
               "success"
             );
-          }
+            this.getData();
         })
-        .catch(function (error) {
+        .catch((error) => {
           Swal.fire(
             "Error",
             JSON.stringify(error.response.data.message),
@@ -195,6 +209,7 @@ export default {
           this.familyname = "";
           this.title = "";
           this.description = "";
+          this.contactDate = "";
         });
     },
     delData(id) {
@@ -203,14 +218,10 @@ export default {
           id: id,
         })
         .then((response) => {
-          Swal.fire(
-            "สำเร็จ",
-            JSON.stringify(response.data.message),
-            "success"
-          );
+          Swal.fire("สำเร็จ", JSON.stringify(response.data.message), "success");
           this.getData();
         })
-        .catch(function (error) {
+        .catch((error) => {
           Swal.fire(
             "Error",
             JSON.stringify(error.response.data.message),
@@ -251,6 +262,17 @@ export default {
           }
         });
     },
+    change(dateChange){
+      const today = new Date(dateChange);
+      var dd = String(today.getDate()).padStart(2, '0');
+      var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      var yyyy = today.getFullYear();
+
+      const date = `${dd}/${mm}/${yyyy}`
+      
+      const changeDate = date;
+      return changeDate;
+    }
     // onRowSelected(items) {
     //   this.selected = items;
     // },
